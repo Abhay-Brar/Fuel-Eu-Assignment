@@ -70,6 +70,33 @@ app.post("/routes/:id/baseline", (req, res) => {
   });
 });
 
+app.get("/routes/comparison", (req, res) => {
+  const baseline = routes.find((route) => route.isBaseline);
+
+  if (!baseline) {
+    return res.status(400).json({ message: "No baseline set" });
+  }
+
+  const target = 89.3368;
+
+  const comparison = routes.map((route) => {
+    const percentDiff =
+      ((route.ghgIntensity / baseline.ghgIntensity) - 1) * 100;
+
+    const compliant = route.ghgIntensity <= target;
+
+    return {
+      routeId: route.routeId,
+      ghgIntensity: route.ghgIntensity,
+      percentDiff: percentDiff.toFixed(2),
+      compliant,
+      isBaseline: route.isBaseline
+    };
+  });
+
+  res.json(comparison);
+});
+
 // start server
 const PORT = 3000;
 app.listen(PORT, () => {
