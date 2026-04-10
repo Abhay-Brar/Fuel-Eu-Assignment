@@ -16,6 +16,7 @@ function App() {
   const [bankResult, setBankResult] = useState<any>(null);
   const [poolAmount, setPoolAmount] = useState<number>(0);
   const [poolResult, setPoolResult] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
     axios.get("http://localhost:5000/routes")
@@ -66,6 +67,11 @@ const handlePoolApply = () => {
   }).then(res => setPoolResult(res.data));
 };
 
+const fetchHistory = () => {
+  axios.get("http://localhost:5000/history")
+    .then(res => setHistory(res.data));
+};
+
   return (
     <div style={{ padding: "20px" }}>
     <h1>FuelEU Dashboard</h1>
@@ -75,6 +81,10 @@ const handlePoolApply = () => {
 
     <button onClick={fetchCB} style={{ marginLeft: "10px" }}>
       Show CB
+    </button>
+
+    <button onClick={fetchHistory} style={{ marginLeft: "10px" }}>
+      Show History
     </button>
 
     {routes.map((route) => (
@@ -212,6 +222,34 @@ const handlePoolApply = () => {
     </div>
   )}
 </div>
+
+{history.length > 0 && (
+  <div style={{ marginTop: "40px" }}>
+    <h2>History</h2>
+
+    <table border={1} cellPadding={10}>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Route</th>
+          <th>Amount</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {history.map((item, index) => (
+          <tr key={index}>
+            <td>{item.type}</td>
+            <td>{item.routeId || "-"}</td>
+            <td>{item.amount || "-"}</td>
+            <td>{new Date(item.timestamp).toLocaleString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
 
   </div>
   );

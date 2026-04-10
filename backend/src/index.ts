@@ -50,6 +50,7 @@ const banked: Record<string, number> = {}; // route-specific bank
 
 let pool: number = 0; // shared pool
 // test route
+let history: any[] = [];
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
@@ -69,10 +70,17 @@ app.post("/routes/:id/baseline", (req, res) => {
     }
   });
 
+   history.push({
+  type: "BASELINE_SET",
+  routeId: routeId,
+  timestamp: new Date()
+});
+
   res.json({
     message: "Baseline updated",
     routes
   });
+ 
 });
 
 app.get("/routes/comparison", (req, res) => {
@@ -126,15 +134,22 @@ app.get("/compliance/cb", (req, res) => {
 app.post("/banking/bank", (req, res) => {
   const { routeId, amount } = req.body;
 
-  // 1️⃣ Validate input
+  //  Validate input
   if (amount <= 0) {
     return res.status(400).json({ message: "Amount must be positive" });
   }
 
-  // 2️⃣ Update banked state
+  //  Update banked state
   banked[routeId] = (banked[routeId] || 0) + amount;
 
-  // 3️⃣ Return updated banked object
+  history.push({
+  type: "BANK",
+  routeId,
+  amount,
+  timestamp: new Date()
+});
+
+  
   res.json({
     message: "Banked successfully",
     banked
@@ -155,6 +170,13 @@ app.post("/banking/apply", (req, res) => {
   // Safe deduction
   banked[routeId] = available - amount;
 
+  history.push({
+  type: "APPLY",
+  routeId,
+  amount,
+  timestamp: new Date()
+});
+
   res.json({
     message: "Applied successfully",
     remaining: banked[routeId]
@@ -167,6 +189,11 @@ app.post("/pooling/bank", (req, res) => {
   const { amount } = req.body;
   if (amount <= 0) return res.status(400).json({ message: "Amount must be positive" });
   pool += amount;
+  history.push({
+  type: "POOL_ADD",
+  amount,
+  timestamp: new Date()
+});
   res.json({ message: "Pooled successfully", pool });
 });
 
@@ -174,8 +201,18 @@ app.post("/pooling/apply", (req, res) => {
   const { amount } = req.body;
   if (amount > pool) return res.status(400).json({ message: "Not enough in pool" });
   pool -= amount;
+  history.push({
+  type: "POOL_USE",
+  amount,
+  timestamp: new Date()
+});
   res.json({ message: "Applied from pool successfully", remainingPool: pool });
 });
+
+app.get("/history", (req, res) => {
+  res.json(history);
+});
+
 // start server
 const PORT = 5000;
 app.listen(PORT, () => {
