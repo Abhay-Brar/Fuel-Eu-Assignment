@@ -2,33 +2,65 @@
 
 ## Overview
 
-This project is a minimal full-stack implementation of a FuelEU Maritime compliance system. It helps track ship emissions, calculate compliance balance (CB), and manage mechanisms like banking and pooling.
+This project is a full-stack implementation of a FuelEU Maritime compliance system. It allows users to track ship emissions, compare routes, calculate compliance balance (CB), and manage flexibility mechanisms such as banking and pooling.
+
+The application includes both backend APIs and a frontend dashboard for interacting with the system.
+
+---
 
 ## Tech Stack
 
-* Backend: Node.js + TypeScript + Express
-* Frontend: React + TypeScript + TailwindCSS (to be implemented)
-* Database: PostgreSQL (planned, currently using in-memory data)
+- Backend: Node.js + TypeScript + Express
+- Frontend: React + TypeScript + TailwindCSS
+- Database: In-memory (PostgreSQL planned)
 
-## Architecture
-
-The project follows a **Hexagonal Architecture (Ports & Adapters)** approach:
-
-* `core/` → business logic (domain + use cases)
-* `adapters/` → UI and infrastructure implementations
-* `infrastructure/` → server and database setup
-* `shared/` → reusable utilities
-
-(Current implementation focuses on backend setup and API development.)
+---
 
 ## Features
 
-* Fetch routes data (`/routes`)
-* Baseline selection (planned)
-* Route comparison (planned)
-* Compliance Balance (CB) calculation (planned)
-* Banking system (planned)
-* Pooling system (planned)
+### Core Features
+
+- Fetch routes data (`/routes`)
+- Set a baseline route for comparison
+- Compare routes based on GHG intensity
+- Calculate Compliance Balance (CB)
+- Banking system (store and apply credits)
+- Pooling system (shared credit pool)
+
+### UI Features
+
+- Dashboard view of all routes
+- Interactive controls for comparison and compliance
+- Banking and pooling actions via UI
+- Activity/History section showing all past actions
+
+---
+
+## Architecture
+
+The project follows a **modular architecture inspired by Hexagonal Architecture (Ports & Adapters)**:
+
+- `core/` → business logic and domain rules  
+- `adapters/` → API routes and controllers  
+- `infrastructure/` → server setup  
+- `frontend/` → React dashboard  
+
+The backend handles all business logic, while the frontend is responsible for user interaction and visualization.
+
+---
+
+## Workflow
+
+User Action → API Call → Backend Logic → State Update → UI Render
+
+Example:
+- User clicks "Bank"
+- Frontend sends POST request
+- Backend updates balance
+- Response is returned
+- UI updates accordingly
+
+---
 
 ## Setup Instructions
 
@@ -38,24 +70,3 @@ The project follows a **Hexagonal Architecture (Ports & Adapters)** approach:
 cd backend
 npm install
 npx ts-node-dev src/index.ts
-```
-
-Server runs on:
-http://localhost:3000
-
-## Testing
-
-* APIs can be tested via browser or Postman
-
-## Current Progress
-
-* Backend server setup completed
-* Express + TypeScript configured
-* Initial API development started
-
-## Future Improvements
-
-* Add PostgreSQL database
-* Implement full hexagonal architecture
-* Build frontend dashboard
-* Add validation and testing

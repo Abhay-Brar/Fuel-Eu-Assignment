@@ -72,187 +72,171 @@ const fetchHistory = () => {
     .then(res => setHistory(res.data));
 };
 
-  return (
-    <div style={{ padding: "20px" }}>
-    <h1>FuelEU Dashboard</h1>
-    <button onClick={fetchComparison}>
-      Show Comparison
-    </button>
+  return(
+  <div className="min-h-screen bg-gray-100 p-6">
+    <h1 className="text-3xl font-bold mb-6">FuelEU Dashboard</h1>
 
-    <button onClick={fetchCB} style={{ marginLeft: "10px" }}>
-      Show CB
-    </button>
+    {/* Top Controls */}
+    <div className="flex gap-4 mb-6">
+      <button onClick={fetchComparison} className="bg-blue-500 text-white px-4 py-2 rounded">
+        Comparison
+      </button>
+      <button onClick={fetchCB} className="bg-green-500 text-white px-4 py-2 rounded">
+        Compliance
+      </button>
+      <button onClick={fetchHistory} className="bg-purple-500 text-white px-4 py-2 rounded">
+        History
+      </button>
+    </div>
 
-    <button onClick={fetchHistory} style={{ marginLeft: "10px" }}>
-      Show History
-    </button>
+    {/* Routes Card */}
+    <div className="bg-white p-5 rounded-2xl shadow mb-6">
+      <h2 className="text-xl font-semibold mb-4">Routes</h2>
 
-    {routes.map((route) => (
-      <div key={route.routeId} style={{ marginBottom: "10px" }}>
-        <strong>{route.routeId}</strong> - {route.ghgIntensity}
-        {route.isBaseline && " (Baseline)"}
+      {routes.map(route => (
+        <div key={route.routeId} className="flex justify-between items-center mb-3">
+          <div>
+            <span className="font-medium">{route.routeId}</span> — {route.ghgIntensity}
+            {route.isBaseline && (
+              <span className="ml-2 text-green-600 font-semibold">Baseline</span>
+            )}
+          </div>
 
-        <button
-          style={{ marginLeft: "10px" }}
-          onClick={() => setBaseline(route.routeId)}
+          <button
+            onClick={() => setBaseline(route.routeId)}
+            className="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+          >
+            Set Baseline
+          </button>
+        </div>
+      ))}
+    </div>
+
+    {/* Banking */}
+    <div className="bg-white p-5 rounded-2xl shadow mb-6">
+      <h2 className="text-xl font-semibold mb-4">Banking</h2>
+
+      <div className="flex gap-3">
+        <select
+          onChange={(e) => setSelectedRoute(e.target.value)}
+          className="border p-2 rounded"
         >
-          Set Baseline
+          <option value="">Select Route</option>
+          {routes.map(r => (
+            <option key={r.routeId} value={r.routeId}>
+              {r.routeId}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          placeholder="Amount"
+          onChange={(e) => setBankAmount(Number(e.target.value))}
+          className="border p-2 rounded"
+        />
+
+        <button onClick={handleBank} className="bg-blue-500 text-white px-3 rounded">
+          Bank
+        </button>
+
+        <button onClick={handleApply} className="bg-green-500 text-white px-3 rounded">
+          Apply
         </button>
       </div>
-    ))}
 
+      {bankResult && (
+        <div className="mt-3 text-sm bg-gray-100 p-2 rounded">
+          {JSON.stringify(bankResult)}
+        </div>
+      )}
+    </div>
+
+    {/* Pooling */}
+    <div className="bg-white p-5 rounded-2xl shadow mb-6">
+      <h2 className="text-xl font-semibold mb-4">Pooling</h2>
+
+      <div className="flex gap-3">
+        <input
+          type="number"
+          placeholder="Amount"
+          onChange={(e) => setPoolAmount(Number(e.target.value))}
+          className="border p-2 rounded"
+        />
+
+        <button onClick={handlePoolBank} className="bg-purple-500 text-white px-3 rounded">
+          Add
+        </button>
+
+        <button onClick={handlePoolApply} className="bg-red-500 text-white px-3 rounded">
+          Use
+        </button>
+      </div>
+
+      {poolResult && (
+        <div className="mt-3 text-sm bg-gray-100 p-2 rounded">
+          {JSON.stringify(poolResult)}
+        </div>
+      )}
+    </div>
+
+    {/* Comparison */}
     {comparison.length > 0 && (
-  <div style={{ marginTop: "30px" }}>
-    <h2>Comparison</h2>
+      <div className="bg-white p-5 rounded-2xl shadow mb-6">
+        <h2 className="text-xl font-semibold mb-4">Comparison</h2>
 
-    <table border={1} cellPadding={10}>
-      <thead>
-        <tr>
-          <th>Route</th>
-          <th>GHG</th>
-          <th>% Diff</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {comparison.map((item) => (
-          <tr key={item.routeId}>
-            <td>{item.routeId}</td>
-            <td>{item.ghgIntensity}</td>
-            <td>{item.percentDiff}%</td>
-            <td>{item.compliant ? "✅" : "❌"}</td>
-          </tr>
+        {comparison.map(item => (
+          <div key={item.routeId} className="flex justify-between border-b py-2">
+            <span>{item.routeId}</span>
+            <span>{item.percentDiff}%</span>
+            <span>{item.compliant ? "✅" : "❌"}</span>
+          </div>
         ))}
-      </tbody>
-    </table>
-  </div>
-)}
+      </div>
+    )}
 
-{cbData.length > 0 && (
-  <div style={{ marginTop: "30px" }}>
-    <h2>Compliance Balance (CB)</h2>
+    {/* Compliance */}
+    {cbData.length > 0 && (
+      <div className="bg-white p-5 rounded-2xl shadow mb-6">
+        <h2 className="text-xl font-semibold mb-4">Compliance Balance</h2>
 
-    <table border={1} cellPadding={10}>
-      <thead>
-        <tr>
-          <th>Route</th>
-          <th>Energy</th>
-          <th>CB</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {cbData.map((item) => (
-          <tr key={item.routeId}>
-            <td>{item.routeId}</td>
-            <td>{item.energy}</td>
-            <td>{item.cb}</td>
-            <td>{item.cb >= 0 ? "✅" : "❌"}</td>
-          </tr>
+        {cbData.map(item => (
+          <div key={item.routeId} className="flex justify-between border-b py-2">
+            <span>{item.routeId}</span>
+            <span>{item.cb}</span>
+            <span>{item.cb >= 0 ? "✅" : "❌"}</span>
+          </div>
         ))}
-      </tbody>
-    </table>
+      </div>
+    )}
+
+    {/* History */}
+    {history.length > 0 && (
+      <div className="bg-white p-5 rounded-2xl shadow">
+        <h2 className="text-xl font-semibold mb-4">Activity</h2>
+
+        <div className="space-y-2">
+          {history.map((item, index) => (
+            <div key={index} className="p-3 bg-gray-50 rounded border">
+              <div>
+                {item.type === "BANK" && `🟢 Banked ${item.amount} for ${item.routeId}`}
+                {item.type === "APPLY" && `🔵 Applied ${item.amount} for ${item.routeId}`}
+                {item.type === "POOL_ADD" && `🟣 Added ${item.amount} to pool`}
+                {item.type === "POOL_USE" && `🔴 Used ${item.amount} from pool`}
+                {item.type === "BASELINE_SET" && `⭐ Baseline set to ${item.routeId}`}
+              </div>
+
+              <div className="text-xs text-gray-500">
+                {new Date(item.timestamp).toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
   </div>
-)}
+);
 
-<div style={{ marginTop: "40px" }}>
-  <h2>Banking</h2>
-
-  {/* Route selector */}
-  <select onChange={(e) => setSelectedRoute(e.target.value)}>
-    <option value="">Select Route</option>
-    {routes.map((r) => (
-      <option key={r.routeId} value={r.routeId}>
-        {r.routeId}
-      </option>
-    ))}
-  </select>
-
-  {/* Amount input */}
-  <input
-    type="number"
-    placeholder="Enter amount"
-    onChange={(e) => setBankAmount(Number(e.target.value))}
-    style={{ marginLeft: "10px" }}
-  />
-
-  {/* Buttons */}
-  <button onClick={handleBank} style={{ marginLeft: "10px" }}>
-    Bank
-  </button>
-
-  <button onClick={handleApply} style={{ marginLeft: "10px" }}>
-    Apply
-  </button>
-
-  {/* Result */}
-  {bankResult && (
-    <div style={{ marginTop: "10px" }}>
-      <pre>{JSON.stringify(bankResult, null, 2)}</pre>
-    </div>
-  )}
-</div>
-
-
-<div style={{ marginTop: "40px" }}>
-  <h2>Pooling</h2>
-
-  {/* Input */}
-  <input
-    type="number"
-    placeholder="Enter amount"
-    onChange={(e) => setPoolAmount(Number(e.target.value))}
-  />
-
-  {/* Buttons */}
-  <button onClick={handlePoolBank} style={{ marginLeft: "10px" }}>
-    Add to Pool
-  </button>
-
-  <button onClick={handlePoolApply} style={{ marginLeft: "10px" }}>
-    Use from Pool
-  </button>
-
-  {/* Result */}
-  {poolResult && (
-    <div style={{ marginTop: "10px" }}>
-      <pre>{JSON.stringify(poolResult, null, 2)}</pre>
-    </div>
-  )}
-</div>
-
-{history.length > 0 && (
-  <div style={{ marginTop: "40px" }}>
-    <h2>History</h2>
-
-    <table border={1} cellPadding={10}>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Route</th>
-          <th>Amount</th>
-          <th>Time</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {history.map((item, index) => (
-          <tr key={index}>
-            <td>{item.type}</td>
-            <td>{item.routeId || "-"}</td>
-            <td>{item.amount || "-"}</td>
-            <td>{new Date(item.timestamp).toLocaleString()}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
-
-  </div>
-  );
 }
 
 export default App;
