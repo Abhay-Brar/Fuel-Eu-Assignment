@@ -177,7 +177,7 @@ app.post("/pooling/apply", (req, res) => {
   res.json({ message: "Applied from pool successfully", remainingPool: pool });
 });
 // start server
-const PORT = 3000;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
