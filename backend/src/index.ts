@@ -40,10 +40,15 @@ const routes: Route[] = [
 
 const app = express();
 
+
+
 // middleware
 app.use(cors());
 app.use(express.json());
 
+const banked: Record<string, number> = {}; // route-specific bank
+
+let pool: number = 0; // shared pool
 // test route
 app.get("/", (req, res) => {
   res.send("Backend is running!");
@@ -97,6 +102,80 @@ app.get("/routes/comparison", (req, res) => {
   res.json(comparison);
 });
 
+app.get("/compliance/cb", (req, res) => {
+  const target = 89.3368;
+
+  const result = routes.map((route) => {
+    const energy = route.fuelConsumption * 41000;
+
+    const cb = (target - route.ghgIntensity) * energy;
+
+    return {
+      routeId: route.routeId,
+      ghgIntensity: route.ghgIntensity,
+      energy,
+      cb: Math.round(cb)
+    };
+  });
+
+  res.json(result);
+});
+
+// banking API
+
+app.post("/banking/bank", (req, res) => {
+  const { routeId, amount } = req.body;
+
+  // 1️⃣ Validate input
+  if (amount <= 0) {
+    return res.status(400).json({ message: "Amount must be positive" });
+  }
+
+  // 2️⃣ Update banked state
+  banked[routeId] = (banked[routeId] || 0) + amount;
+
+  // 3️⃣ Return updated banked object
+  res.json({
+    message: "Banked successfully",
+    banked
+  });
+});
+
+
+
+app.post("/banking/apply", (req, res) => {
+  const { routeId, amount } = req.body;
+
+  const available = banked[routeId] || 0;
+
+  if (amount > available) {
+    return res.status(400).json({ message: "Not enough banked amount" });
+  }
+
+  // Safe deduction
+  banked[routeId] = available - amount;
+
+  res.json({
+    message: "Applied successfully",
+    remaining: banked[routeId]
+  });
+});
+
+// pooling API
+
+app.post("/pooling/bank", (req, res) => {
+  const { amount } = req.body;
+  if (amount <= 0) return res.status(400).json({ message: "Amount must be positive" });
+  pool += amount;
+  res.json({ message: "Pooled successfully", pool });
+});
+
+app.post("/pooling/apply", (req, res) => {
+  const { amount } = req.body;
+  if (amount > pool) return res.status(400).json({ message: "Not enough in pool" });
+  pool -= amount;
+  res.json({ message: "Applied from pool successfully", remainingPool: pool });
+});
 // start server
 const PORT = 3000;
 app.listen(PORT, () => {
